@@ -4,14 +4,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
+var dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 var app = express_1.default();
-var port = 3000;
+var port = process.env.PORT || 3000;
 app.get('/', function (req, res) {
-    res.send('The sedulous hyena ate the antelope!');
+    res.send('Hello, World!');
 });
-app.listen(port, (function (err) {
-    if (err) {
-        return console.error(err);
-    }
+app.listen(port, function () {
     return console.log("server is listening on " + port);
-}));
+});

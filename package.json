@@ -9,7 +9,8 @@
     "start": "npm run build && node build/index.js",
     "lint": "eslint . --ext .ts",
     "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
-    "prettier-watch": "onchange 'src/**/*.ts' -- prettier --write {{changed}}"
+    "prettier-watch": "onchange 'src/**/*.ts' -- prettier --write {{changed}}",
+    "rimraf": "^3.0.0"
   },
   "husky": {
     "hooks": {
