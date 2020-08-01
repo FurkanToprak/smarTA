@@ -1,9 +1,24 @@
-/**
- * TODO: establish schemas getters/stashers for classrooms, workspaces, and users.
- * Develop statistical models for classroom/user understanding, etc. Identify novel/unanswered questions. Make a prof. dashboard.
- */
+import mongoose from 'mongoose';
 
-/** TODO: Fetch workspace given a userID (or other attributes?) */
-function fetchWorkspace(): string {
-  return '';
-}
+export const UserSchema = new mongoose.Schema({
+  name: String,
+  channel: String,
+  questions: [String],
+});
+
+export const TextbookSchema = new mongoose.Schema({
+  raw: String,
+  urls: [String],
+});
+
+export const SyllabusSchema = new mongoose.Schema({
+  raw: String,
+  url: String,
+});
+
+export const WorkspaceSchema = new mongoose.Schema({
+  team: String,
+  textbook: TextbookSchema,
+  syllabus: SyllabusSchema,
+  users: [UserSchema],
+});

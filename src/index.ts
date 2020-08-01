@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { WebClient } from '@slack/web-api';
 import { createEventAdapter } from '@slack/events-api';
+import mongoose from 'mongoose';
 import {
   AppHomeOpened,
   IncomingMessage,
@@ -9,14 +10,32 @@ import {
   slackToken,
   BotPrompts,
 } from './SlackServices';
+import {
+  UserSchema,
+  TextbookSchema,
+  SyllabusSchema,
+  WorkspaceSchema,
+} from './MongoServices';
 import express from 'express';
 import bodyParser from 'body-parser';
 
 dotenv.config();
 
-const port = Number.parseInt(process.env.PORT ? process.env.PORT : '4000');
+const port = Number.parseInt(process.env.PORT || '4000');
+const mongoURI = process.env.MONGO_URI || 'mongodb://localhost/test';
 
-// Configure Slack HTTPS URL.
+const mongoConection = mongoose.createConnection(mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+mongoConection.on('error', console.error.bind(console, 'connection error:'));
+mongoConection.once('open', function() {
+  console.log('Connected!');
+});
+
+/** In order to configure SlackEvents to be directed towards a specifc IP,
+ *  the server must respond to Slack's POST request with their challenge parameter.
+ */
 function configureServer(port: number): void {
   const app = express();
   const jsonParser = bodyParser.json();
@@ -34,6 +53,7 @@ function configureServer(port: number): void {
   });
 }
 
+/** Sets up event listeners along with some basic logic. */
 function initializeSlack(port: number): void {
   const slackWebClient = new WebClient(slackToken);
   const slackEventsClient = createEventAdapter(slackSigningSecret, {
@@ -84,16 +104,19 @@ function initializeSlack(port: number): void {
             channel: event.channel,
             token: slackToken,
           });
+          console.log(slackUser);
+          console.log(event);
         }
       });
     })
-    .catch((reason: any) => {
+    .catch(reason => {
       console.log('An error occurred when initializing Slack Events Client.');
       // TODO: Slack connection error to MongoDB
       console.log(reason);
     });
 }
 
+/** Entry point of the app. */
 function entryPoint(developmentMode: boolean): void {
   if (developmentMode) {
     configureServer(port);

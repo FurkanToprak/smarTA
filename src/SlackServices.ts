@@ -108,7 +108,7 @@ export interface SlackUser {
   real_name_normalized: string;
   display_name: string;
   display_name_normalized: string;
-  fields: any;
+  fields: unknown;
   status_text: string;
   status_emoji: string;
   status_expiration: number;
