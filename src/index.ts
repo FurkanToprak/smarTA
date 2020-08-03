@@ -9,6 +9,7 @@ import {
   slackSigningSecret,
   slackToken,
   BotPrompts,
+  SlackConversation,
 } from './SlackServices';
 import {
   UserSchema,
@@ -23,15 +24,7 @@ dotenv.config();
 
 const port = Number.parseInt(process.env.PORT || '4000');
 const mongoURI = process.env.MONGO_URI || 'mongodb://localhost/test';
-
-const mongoConection = mongoose.createConnection(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-mongoConection.on('error', console.error.bind(console, 'connection error:'));
-mongoConection.once('open', function() {
-  console.log('Connected!');
-});
+mongoose.set('useFindAndModify', false);
 
 /** In order to configure SlackEvents to be directed towards a specifc IP,
  *  the server must respond to Slack's POST request with their challenge parameter.
@@ -54,7 +47,10 @@ function configureServer(port: number): void {
 }
 
 /** Sets up event listeners along with some basic logic. */
-function initializeSlack(port: number): void {
+function initializeSlack(
+  port: number,
+  mongoConection: mongoose.Connection,
+): void {
   const slackWebClient = new WebClient(slackToken);
   const slackEventsClient = createEventAdapter(slackSigningSecret, {
     includeBody: false,
@@ -65,47 +61,166 @@ function initializeSlack(port: number): void {
     .start(port)
     .then(() => {
       slackEventsClient.on('message', async (event: IncomingMessage) => {
-        const result = await slackWebClient.users.profile.get({
+        const userResult = await slackWebClient.users.profile.get({
           token: slackToken,
           user: event.user,
         });
-        if (result.error) {
+        if (userResult.error) {
           // TODO: Slack connection error to MongoDB
         } else {
-          const slackUser = result.profile as SlackUser;
+          const slackUser = userResult.profile as SlackUser;
           // Don't talk to yourself.
           if (
             slackUser.real_name !== 'smarta' &&
             slackUser.real_name !== 'smartatest'
           ) {
-            // TODO: Slack stuff
-            await slackWebClient.chat.postMessage({
-              text: 'TODO:',
-              channel: event.channel,
-              token: slackToken,
-            });
+            // TODO: Decision tree.
           }
-          console.log(slackUser);
         }
       });
 
       slackEventsClient.on('app_home_opened', async (event: AppHomeOpened) => {
-        const result = await slackWebClient.users.profile.get({
+        const userResult = await slackWebClient.users.profile.get({
           token: slackToken,
           user: event.user,
         });
-        if (result.error) {
+        if (userResult.error) {
           // TODO: Slack connection error to MongoDB
         } else {
-          const slackUser = result.profile as SlackUser;
-          // TODO: Connect mongodb and only give them an intro if they're not connected.
-          await slackWebClient.chat.postMessage({
-            text: BotPrompts.Introduction,
-            channel: event.channel,
+          /** If user is successfully fetched, get more information on the team the user is in. */
+          const conversationResult = await slackWebClient.conversations.info({
             token: slackToken,
+            channel: event.channel,
           });
-          console.log(slackUser);
-          console.log(event);
+          if (conversationResult.error) {
+            // TODO: Check if latest can be fetched if there is no text.
+            // TODO: Slack error to mongoDB
+          } else {
+            const slackConversation = conversationResult.channel as SlackConversation;
+            const team = slackConversation.latest.team;
+            const slackUser = userResult.profile as SlackUser;
+            const name = slackUser.real_name;
+            const channel = event.channel;
+            /** Create mongo user model. */
+            const mongoUser = mongoConection.model('UserSchema', UserSchema);
+            /** Create mongo workspace model */
+            const mongoWorkspace = mongoConection.model(
+              'WorkspaceSchema',
+              WorkspaceSchema,
+            );
+            /** Check if user's workspace has uploaded a textbook. */
+            const workspaceQuery = await mongoWorkspace.findOne({ team });
+            if (workspaceQuery) {
+              const textbook = workspaceQuery.get('textbook');
+              /** If textbook */
+              if (textbook) {
+                /** Find user. If such a user, increment its usage. */
+                const updateUserQuery = await mongoUser.findOneAndUpdate(
+                  {
+                    name,
+                    channel,
+                  },
+                  {
+                    $push: {
+                      logins: Date(),
+                    },
+                  },
+                );
+                /** If user exists */
+                if (updateUserQuery) {
+                  /** Welcome back user. */
+                  slackWebClient.chat.postMessage({
+                    text: BotPrompts.WelcomeBack,
+                    channel: event.channel,
+                    token: slackToken,
+                  });
+                } else {
+                  /** Make user and give user an introduction */
+                  const newUser = await mongoUser.create({
+                    name,
+                    channel,
+                    questions: [],
+                    logins: [new Date()],
+                  });
+                  mongoWorkspace.findOneAndUpdate(
+                    { team },
+                    {
+                      $push: {
+                        users: newUser,
+                      },
+                    },
+                  );
+                  slackWebClient.chat.postMessage({
+                    text: BotPrompts.Introduction,
+                    channel: event.channel,
+                    token: slackToken,
+                  });
+                }
+              } else {
+                /** Find user. If such a user, increment its usage. */
+                const updateUserQuery = await mongoUser.findOneAndUpdate(
+                  {
+                    name,
+                    channel,
+                  },
+                  {
+                    $push: {
+                      logins: Date(),
+                    },
+                  },
+                );
+                /** If user exists */
+                if (updateUserQuery) {
+                  /** Welcome back user. */
+                  slackWebClient.chat.postMessage({
+                    text: BotPrompts.NoUploadWelcomeBack,
+                    channel: event.channel,
+                    token: slackToken,
+                  });
+                } else {
+                  /** Make user and give user an introduction */
+                  const newUser = await mongoUser.create({
+                    name,
+                    channel,
+                    questions: [],
+                    logins: [new Date()],
+                  });
+                  mongoWorkspace.findOneAndUpdate(
+                    { team },
+                    {
+                      $push: {
+                        users: newUser,
+                      },
+                    },
+                  );
+                  slackWebClient.chat.postMessage({
+                    text: BotPrompts.NoUploadIntroduction,
+                    channel: event.channel,
+                    token: slackToken,
+                  });
+                }
+              }
+            } else {
+              /** No workspace; meaning no user. Create new user on mongo */
+              const newUser = await mongoUser.create({
+                name,
+                channel,
+                questions: [],
+                logins: [new Date()],
+              });
+              /** Create new workspace with new user in it. */
+              mongoWorkspace.create({
+                team,
+                users: [newUser._id],
+              });
+              /** Give user an introduction, with directions to upload content. */
+              slackWebClient.chat.postMessage({
+                text: BotPrompts.NoUploadIntroduction,
+                channel: event.channel,
+                token: slackToken,
+              });
+            }
+          }
         }
       });
     })
@@ -121,7 +236,16 @@ function entryPoint(developmentMode: boolean): void {
   if (developmentMode) {
     configureServer(port);
   } else {
-    initializeSlack(port);
+    const mongoConnection = mongoose.createConnection(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    mongoConnection.on('error', () =>
+      console.log('Error while connecting to mongodb.'),
+    );
+    mongoConnection.once('open', function() {
+      initializeSlack(port, mongoConnection);
+    });
   }
 }
 

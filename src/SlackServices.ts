@@ -7,12 +7,15 @@ export const slackSigningSecret: string =
 
 /** Things smarta says. */
 export enum BotPrompts {
-  Introduction = "\
-  Hello! Thank you for installing smarTA. I'm powered by AI. My only purpose in life is to help students learn. Here's how you teach me:\n\n\
+  NoUploadIntroduction = "\
+  Hello! Thank you for installing smarTA. I'm powered by AI. My only purpose in life is to help students learn. :apple: Here's how you teach me:\n\n\
   *1)* Upload the course textbook in pdf format. Make sure you rename it `textbook.pdf` before uploading, so I know what it is.\n\n\
   *2)* Upload the course syllabus in pdf format. Make sure you rename it `syllabus.pdf` before uploading, so I know what it is.\n\n\
   *Note:* Slack only allows for files less than _1 GB_. Please be aware of this limitation.\n\n\
   *Copyright notice:* Please make sure that you have appropriate permissions to distribute excerpts from the textbook internally. smarTA is not liable for any copyright violations or intellectual property (IP) infringements.",
+  Introduction = "Hello! I am smarTA. I'm powered by AI. My only purpose in life is to help students learn. Ask me a question and I will answer from your textbook. :apple:",
+  NoUploadWelcomeBack = 'Welcome back! I still need you to upload the textbook and syllabus to answer your question. Sorry :(',
+  WelcomeBack = "Welcome back! I can't wait to answer your next clever question :)",
 }
 
 /**
@@ -123,4 +126,49 @@ export interface SlackUser {
   image_192: string;
   image_512: string;
   status_text_canonical: string;
+  team: string;
+}
+
+/** Slack WebClient API Conversation info response 
+ * @example
+ * {
+        "id": "C012AB3CD",
+        "created": 1507235627,
+        "is_im": true,
+        "is_org_shared": false,
+        "user": "U27FFLNF4",
+        "last_read": "1513718191.000038",
+        "latest": {
+            "type": "message",
+            "user": "U5R3PALPN",
+            "text": "Psssst!",
+            "ts": "1513718191.000038"
+        },
+        "unread_count": 0,
+        "unread_count_display": 0,
+        "is_open": true,
+        "locale": "en-US",
+        "priority": 0.043016851216706,
+        "num_members": 2
+    }
+*/
+export interface SlackConversation {
+  id: string;
+  created: number;
+  is_archived: boolean;
+  is_im: boolean;
+  is_org_shared: boolean;
+  user: string;
+  last_read: number;
+  latest: {
+    type: string;
+    text: string;
+    user: string;
+    ts: string;
+    team: string;
+  };
+  unread_count: number;
+  unread_count_display: number;
+  is_open: boolean;
+  priority: number;
 }
