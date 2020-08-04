@@ -74,7 +74,74 @@ function initializeSlack(
             slackUser.real_name !== 'smarta' &&
             slackUser.real_name !== 'smartatest'
           ) {
-            // TODO: Decision tree.
+            /** Create mongo user model. */
+            const mongoUser = mongoConection.model('UserSchema', UserSchema);
+            /** Create mongo workspace model */
+            const mongoWorkspace = mongoConection.model(
+              'WorkspaceSchema',
+              WorkspaceSchema,
+            );
+            const userQuery = await mongoUser.findOne({
+              name: slackUser.real_name,
+            });
+            if (userQuery) {
+              if (event.files) {
+                /** Lets user know the textbook is processing. */
+                await slackWebClient.chat.postMessage({
+                  text: BotPrompts.UploadPreprocess,
+                  channel: event.channel,
+                  token: slackToken,
+                });
+                // TODO: Process textbook.
+                mongoWorkspace
+                  .findOneAndUpdate(
+                    {
+                      users: { $all: [userQuery._id] },
+                    },
+                    { textbook: 'NEW TEXTBOOK' },
+                  )
+                  .then(() => {
+                    /** Lets user know the textbook is done processing. */
+                    slackWebClient.chat.postMessage({
+                      text: BotPrompts.UploadPostprocess,
+                      channel: event.channel,
+                      token: slackToken,
+                    });
+                  });
+              } else {
+                const workspaceQuery = await mongoWorkspace.findOne({
+                  users: { $all: [userQuery._id] },
+                });
+                if (workspaceQuery) {
+                  const workspaceTextbook = workspaceQuery.get('textbook');
+                  if (workspaceTextbook) {
+                    /** Add to list of questions. */
+                    mongoUser.findOneAndUpdate(
+                      {
+                        _id: userQuery._id,
+                      },
+                      {
+                        $push: {
+                          questions: event.text,
+                        },
+                      },
+                    );
+                    // TODO: Process Query and answer.
+                  } else {
+                    /** Give user an introduction, with directions to upload content. */
+                    slackWebClient.chat.postMessage({
+                      text: BotPrompts.NoUpload,
+                      channel: event.channel,
+                      token: slackToken,
+                    });
+                  }
+                } else {
+                  // TODO: Log error to mongodb
+                }
+              }
+            } else {
+              // TODO: Log error to mongodb.
+            }
           }
         }
       });

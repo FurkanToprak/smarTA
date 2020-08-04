@@ -16,6 +16,9 @@ export enum BotPrompts {
   Introduction = "Hello! I am smarTA. I'm powered by AI. My only purpose in life is to help students learn. Ask me a question and I will answer from your textbook. :apple:",
   NoUploadWelcomeBack = 'Welcome back! I still need you to upload the textbook and syllabus to answer your question. Sorry :(',
   WelcomeBack = "Welcome back! I can't wait to answer your next clever question :)",
+  NoUpload = 'No textbook uploaded. Follow the upload instructions above and ask your question again.',
+  UploadPreprocess = 'Processing textbook...',
+  UploadPostprocess = 'Your textbook has been processed. You can now ask questions.',
 }
 
 /**
