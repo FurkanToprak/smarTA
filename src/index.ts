@@ -14,11 +14,12 @@ import {
 import {
   UserSchema,
   TextbookSchema,
-  SyllabusSchema,
   WorkspaceSchema,
+  ErrorSchema,
 } from './MongoServices';
 import express from 'express';
 import bodyParser from 'body-parser';
+import { scrapeSlackFile } from './LanguageServices';
 
 dotenv.config();
 
@@ -66,7 +67,12 @@ function initializeSlack(
           user: event.user,
         });
         if (userResult.error) {
-          // TODO: Slack connection error to MongoDB
+          // Log error to mongodb
+          const mongoError = mongoConection.model('ErrorSchema', ErrorSchema);
+          mongoError.create({
+            error: `Slack web api error: ${userResult.error}`,
+            date: Date(),
+          });
         } else {
           const slackUser = userResult.profile as SlackUser;
           // Don't talk to yourself.
@@ -86,28 +92,32 @@ function initializeSlack(
             });
             if (userQuery) {
               if (event.files) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const textbookURL = (event.files[0] as any)['url_private'];
                 /** Lets user know the textbook is processing. */
                 await slackWebClient.chat.postMessage({
                   text: BotPrompts.UploadPreprocess,
                   channel: event.channel,
                   token: slackToken,
                 });
-                // TODO: Process textbook.
-                mongoWorkspace
-                  .findOneAndUpdate(
-                    {
-                      users: { $all: [userQuery._id] },
-                    },
-                    { textbook: 'NEW TEXTBOOK' },
-                  )
-                  .then(() => {
-                    /** Lets user know the textbook is done processing. */
-                    slackWebClient.chat.postMessage({
-                      text: BotPrompts.UploadPostprocess,
-                      channel: event.channel,
-                      token: slackToken,
-                    });
+                const workspaceQuery = await mongoWorkspace.findOne({
+                  users: { $all: [userQuery._id] },
+                });
+                if (workspaceQuery) {
+                  // Process textbook.
+                  scrapeSlackFile(
+                    textbookURL,
+                    workspaceQuery.get('team'),
+                    slackToken,
+                    mongoConection,
+                  );
+                  /** Lets user know the textbook is done processing. */
+                  slackWebClient.chat.postMessage({
+                    text: BotPrompts.UploadPostprocess,
+                    channel: event.channel,
+                    token: slackToken,
                   });
+                }
               } else {
                 const workspaceQuery = await mongoWorkspace.findOne({
                   users: { $all: [userQuery._id] },
@@ -116,7 +126,7 @@ function initializeSlack(
                   const workspaceTextbook = workspaceQuery.get('textbook');
                   if (workspaceTextbook) {
                     /** Add to list of questions. */
-                    mongoUser.findOneAndUpdate(
+                    await mongoUser.findOneAndUpdate(
                       {
                         _id: userQuery._id,
                       },
@@ -136,11 +146,27 @@ function initializeSlack(
                     });
                   }
                 } else {
-                  // TODO: Log error to mongodb
+                  // Log error to mongodb
+                  const mongoError = mongoConection.model(
+                    'ErrorSchema',
+                    ErrorSchema,
+                  );
+                  mongoError.create({
+                    error: `Workspace query error: ${userQuery}`,
+                    date: Date(),
+                  });
                 }
               }
             } else {
-              // TODO: Log error to mongodb.
+              // Log error to mongodb.
+              const mongoError = mongoConection.model(
+                'ErrorSchema',
+                ErrorSchema,
+              );
+              mongoError.create({
+                error: `Slack user query error: ${userQuery}`,
+                date: Date(),
+              });
             }
           }
         }
@@ -152,7 +178,12 @@ function initializeSlack(
           user: event.user,
         });
         if (userResult.error) {
-          // TODO: Slack connection error to MongoDB
+          // Slack error to mongoDB
+          const mongoError = mongoConection.model('ErrorSchema', ErrorSchema);
+          mongoError.create({
+            error: `Slack user query error: ${userResult.error}`,
+            date: Date(),
+          });
         } else {
           /** If user is successfully fetched, get more information on the team the user is in. */
           const conversationResult = await slackWebClient.conversations.info({
@@ -160,8 +191,12 @@ function initializeSlack(
             channel: event.channel,
           });
           if (conversationResult.error) {
-            // TODO: Check if latest can be fetched if there is no text.
-            // TODO: Slack error to mongoDB
+            // Slack error to mongoDB
+            const mongoError = mongoConection.model('ErrorSchema', ErrorSchema);
+            mongoError.create({
+              error: `Slack conversation query error: ${conversationResult.error}`,
+              date: Date(),
+            });
           } else {
             const slackConversation = conversationResult.channel as SlackConversation;
             const team = slackConversation.latest.team;
@@ -292,9 +327,12 @@ function initializeSlack(
       });
     })
     .catch(reason => {
-      console.log('An error occurred when initializing Slack Events Client.');
-      // TODO: Slack connection error to MongoDB
-      console.log(reason);
+      // Log error to mongodb
+      const mongoError = mongoConection.model('ErrorSchema', ErrorSchema);
+      mongoError.create({
+        error: `Slack init error: ${reason}`,
+        date: Date(),
+      });
     });
 }
 

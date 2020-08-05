@@ -19,7 +19,12 @@ export const SyllabusSchema = new mongoose.Schema({
 
 export const WorkspaceSchema = new mongoose.Schema({
   team: String,
-  textbook: TextbookSchema,
+  textbook: String,
   syllabus: SyllabusSchema,
   users: [String],
+});
+
+export const ErrorSchema = new mongoose.Schema({
+  error: String,
+  time: Date,
 });
