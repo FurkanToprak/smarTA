@@ -1,7 +1,7 @@
 {
-  "name": "typescript-starter",
+  "name": "smarta",
   "version": "1.0.0",
-  "description": "A basic typescript app starter for newbies in 2019.",
+  "description": "Back end for smarTA.",
   "main": "index.js",
   "scripts": {
     "build:deploy": "rimraf ./build && tsc && cp package.json ./build && cp .env ./build",
