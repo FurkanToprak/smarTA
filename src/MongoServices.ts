@@ -9,7 +9,6 @@ export const UserSchema = new mongoose.Schema({
 
 export const TextbookSchema = new mongoose.Schema({
   raw: String,
-  urls: [String],
 });
 
 export const SyllabusSchema = new mongoose.Schema({

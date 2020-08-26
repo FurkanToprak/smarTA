@@ -12,10 +12,8 @@ export function scrapeSlackFile(
   slackToken: string,
   mongoConnection: mongoose.Connection,
 ): void {
-  const pdfFile = path.join(__dirname, `${fileTeam}.pdf`);
-  const txtFile = path.join(__dirname, `${fileTeam}.txt`);
-  console.log(pdfFile);
-  console.log(txtFile);
+  const pdfFile = path.join(__dirname, `books/${fileTeam}.pdf`);
+  const txtFile = path.join(__dirname, `books/${fileTeam}.txt`);
   request({
     url: fileURL,
     headers: {
@@ -32,11 +30,22 @@ export function scrapeSlackFile(
       xpdfProcess.on('close', async (code: number) => {
         if (code === 0) {
           const txtContents = fs.readFileSync(txtFile);
-          // Remove the .txt file.
-          const removeTxt = exec(`rm ${txtFile}`);
-          removeTxt.on('error', function(err) {
-            console.log(err);
-          });
+          // Split txtContents into sentences & lines.
+          const findLinesAndSentences = new RegExp(/([\w .]+)[\n]/g);
+          const linesAndSentences = txtContents
+            .toString()
+            .match(findLinesAndSentences);
+          if (!linesAndSentences) {
+            throw Error('Empty regex array.');
+          }
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          const cleanedLinesAndSentences = linesAndSentences!.map(
+            (value: string) => {
+              return value.trim();
+            },
+          );
+          console.log(linesAndSentences);
+          console.log(cleanedLinesAndSentences);
           // Remove the .pdf file.
           const removePdf = exec(`rm ${pdfFile}`);
           removePdf.on('error', function(err) {
@@ -56,10 +65,11 @@ export function scrapeSlackFile(
           });
           await mongoWorkspace.findOneAndUpdate(
             {
-              _id: newTextbook._id,
+              team: fileTeam,
             },
             { textbook: newTextbook._id },
           );
+          // TODO: app.use('/static', express.static(txtFile)))
         } /* Error opening PDF file.*/ else if (code === 1) {
           null;
         } /* Error opening an output file.*/ else if (code === 2) {
