@@ -356,9 +356,6 @@ function initializeSlack(
   app.use('/slack', slackEventsClient.requestListener());
   /** Serve static files at /books endpoint. */
   app.use('/books', express.static('books'));
-  app.post('/slack', (req, res) => {
-    console.log(req);
-  })
   app.listen(port, () => console.log(`Listening on port ${port}`));
 }
 
