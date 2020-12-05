@@ -7,11 +7,15 @@ var express_1 = __importDefault(require("express"));
 var dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 var app = express_1.default();
-var port = process.env.PORT || 3000;
+app.use(bodyParser.urlencoded({extended: true}))
+app.use(bodyParser.json())
+var port = process.env.PORT || 4000;
 app.get('/', function (req, res) {
+    console.log(req)
     res.send('Hello, World!');
 });
 app.post('/', function (req, res) {
+    console.log(req)
     res.send('Hello, World!');
 });
 app.listen(port, function () {

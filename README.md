@@ -28,3 +28,8 @@ smarTA does the following:
 ---
 ## TODO
 Pick a better (faster) NLP model to fetch user queries.
+
+# To connect to slack:
+* `ngrok http 4000`
+* `npm run start:dev`
+* [API Dashboard](https://api.slack.com/apps/A018EV821L0/event-subscriptions?)`smartatest` -> `Event Subscriptions` -> `URL/slack`
