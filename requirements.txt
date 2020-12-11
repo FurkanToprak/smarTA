@@ -6,5 +6,6 @@ pymongo
 pymongo[srv]
 fuzzywuzzy
 python-Levenshtein
+tensorflow
 tensorflow_hub
 numpy

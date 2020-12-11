@@ -37,15 +37,17 @@ class Monkey:
         }
         return self.usersCollection.find_one(searchedUser)
 
-    def updateUser(self, teamID, userID, question=None, isAdmin=None, state=None, relevantTopics=None, chosenTopic=None):
+    def updateUser(self, teamID, userID, question=None, isAdmin=None, state=None, relevantTopics=None, chosenTopic=None, goodBot=None, badBot=None):
         searchedUser = {
             'userID': userID,
             'teamID': teamID,
         }
         updateDict = {}
         initSet = False
+        initPush = False
         if question:
             updateDict['$push'] = {'questions': question}
+            initPush = True
         if isAdmin is not None:
             initSet = True
             updateDict['$set'] = {'isAdmin': isAdmin}
@@ -54,25 +56,37 @@ class Monkey:
                 updateDict['$set']['state'] = state
             else:
                 updateDict['$set'] = {'state': state}
-            initSet = True
+                initSet = True
         if relevantTopics is not None:
             if initSet:
                 updateDict['$set']['relevantTopics'] = relevantTopics
             else:
                 updateDict['$set'] = {'relevantTopics': relevantTopics}
+                initSet = True
         if chosenTopic is not None:
             if initSet:
                 updateDict['$set']['chosenTopic'] = chosenTopic
             else:
                 updateDict['$set'] = {'chosenTopic': chosenTopic}
+                initSet = True
         operationFlags = {'returnNewDocument': True}
         return self.usersCollection.find_one_and_update(
             searchedUser, updateDict, operationFlags)
 
+    def resetAllUsers(teamID):
+        self.usersCollection.updateMany({}, {'$set': {
+            'state': 0,
+            'questions': [],
+            'relevantTopics': [],
+            'chosenTopic': -1,
+        }})
+
     def insertWorkspace(self, teamID):
         newWorkspace = {
             'files': [],
-            'teamID': teamID
+            'teamID': teamID,
+            'goodBot': 0,
+            'badBot': 0,
         }
         insertResult = self.workspacesCollection.insert_one(newWorkspace)
         if not insertResult:
@@ -87,15 +101,31 @@ class Monkey:
         }
         return self.workspacesCollection.find_one(newWorkspace)
 
-    def updateWorkspace(self, teamID, files=None):
+    def updateWorkspace(self, teamID, files=None, goodBot=None, badBot=None):
         searchedWorkspace = {
             'teamID': teamID,
         }
         updateDict = {}
+        initSet = False
+        initPush = False
         if files == -1:
             updateDict['$set'] = {'files': []}
-        elif files:
+            initSet = True
+        elif files is not None:
             updateDict['$push'] = {'files': {'$each': files}}
+            initPush = True
+        if goodBot is not None:
+            if initSet:
+                updateDict['$set']['goodBot'] = goodBot
+            else:
+                updateDict['$set'] = {'goodBot': goodBot}
+                initSet = True
+        if badBot is not None:
+            if initSet:
+                updateDict['$set']['badBot'] = badBot
+            else:
+                updateDict['$set'] = {'badBot': badBot}
+                initSet = True
         operationFlags = {'returnNewDocument': True}
         return self.workspacesCollection.find_one_and_update(
             searchedWorkspace, updateDict, operationFlags)

@@ -51,7 +51,7 @@ def addQuestion(eventTeam, eventUser, question):
     monkey.updateUser(eventTeam, eventUser, question=question)
 
 
-def processCommand(eventText, eventTeam, eventUser, say, isAdmin):
+def processCommand(eventText, eventTeam, eventUser, say, isAdmin, state, goodBot, badBot):
     try:
         if slackMessages.isAdminCommand(eventText) and not isAdmin:
             say(slackMessages.adminRequiredError)
@@ -62,6 +62,7 @@ def processCommand(eventText, eventTeam, eventUser, say, isAdmin):
             say(slackMessages.statusWorkspaceResponse(eventTeam, files))
         elif eventText == slackMessages.clearWorkspaceCommand:
             monkey.updateWorkspace(eventTeam, -1)
+            monkey.resetAllUsers(eventTeam)
             say(slackMessages.clearWorkspaceResponse)
         elif eventText == slackMessages.statusCommand:
             say(slackMessages.statusResponse(isAdmin, eventUser, eventTeam))
@@ -83,6 +84,25 @@ def processCommand(eventText, eventTeam, eventUser, say, isAdmin):
             searchResult = monkey.findWorkspace(eventTeam)
             files = searchResult['files']
             say(slackMessages.listTopics(files))
+        elif eventText == slackMessages.cancelQuestionCommand:
+            if state == 0:
+                say(slackMessages.zeroStateRestriction)
+                return
+            else:
+                monkey.updateUser(eventTeam, eventUser, state = 0)
+                say(slackMessages.cancelQuestionResponse)
+        elif eventText == slackMessages.backQuestionCommand:
+            if state == 0:
+                say(slackMessages.zeroStateRestriction)
+            else:
+                monkey.updateUser(eventTeam, eventUser, state = state - 1)
+                say(slackMessages.backQuestionResponse)
+        elif eventText == slackMessages.goodBotCommand:
+            say(slackMessages.goodBotResponse)
+            monkey.updateWorkspace(eventTeam, goodBot=goodBot)
+        elif eventText == slackMessages.badBotCommand:
+            say(slackMessages.badBotResponse)
+            monkey.updateWorkspace(eventTeam, badBot=badBot)
     except Exception as s:
         print(s)
         say(slackMessages.unknownError)
@@ -125,6 +145,8 @@ def Respond(event, say):
     if not thisUser:
         thisUser = monkey.insertUser(eventTeam, eventUser)
     files = thisWorkspace['files']
+    goodBot = thisWorkspace['goodBot']
+    badBot = thisWorkspace['badBot']
     isAdmin = thisUser['isAdmin'] # bool
     state = thisUser['state'] # int
     relevantTopics = thisUser['relevantTopics'] # string[]
@@ -132,7 +154,7 @@ def Respond(event, say):
     # Flags regarding user
     convertFile = eventText == slackMessages.convertFlag
     if slackMessages.isCommand(eventText):  # Process user message
-        processCommand(eventText, eventTeam, eventUser, say, isAdmin)
+        processCommand(eventText, eventTeam, eventUser, say, isAdmin, state, goodBot, badBot)
         return
     elif eventFiles:  # Process files, if any and if possible
         processFiles(monkey, eventTeam, eventFiles, say, convertFile,
