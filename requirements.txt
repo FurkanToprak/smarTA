@@ -1,0 +1,10 @@
+slack_bolt
+python-dotenv
+requests
+pdfminer.six
+pymongo
+pymongo[srv]
+fuzzywuzzy
+python-Levenshtein
+tensorflow_hub
+numpy
