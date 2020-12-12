@@ -10,3 +10,4 @@ tensorflow
 tensorflow_hub
 numpy==1.18.4
 nltk
+dnspython
