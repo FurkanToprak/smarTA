@@ -37,6 +37,8 @@ app = App(
     signing_secret=slackSigningSecret,
     token=slackOAuthToken
 )
+if __name__ == "__main__":
+    app.start(port=appPort)
 
 # Initialize mongo controller
 monkey = Monkey(mongoDatabase, mongoPassword)
@@ -212,7 +214,3 @@ def Respond(event, say):
             say(slackMessages.questionResponse(
                 brain.think(relevantText, eventText)))
             return
-
-
-if __name__ == "__main__":
-    app.start(port=appPort)
