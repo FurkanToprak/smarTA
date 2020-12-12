@@ -6,8 +6,11 @@ import slackMessages
 from slackHelpers import fetchTeamFromURL, processFiles, findRelevantTopics
 from mongoHelpers import Monkey, MAX_STATE
 import pymongo
-import requests
+import logging
 from smartaBrain import SmartaBrain
+
+logging.basicConfig(level=logging.DEBUG)
+
 # Load environment variables.
 load_dotenv()
 slackSigningSecret = os.getenv('SLACK_SIGNING_SECRET')
@@ -115,12 +118,14 @@ def processCommand(eventText, eventTeam, eventUser, say, isAdmin, state, goodBot
 
 @app.event('app_home_opened')
 def Greet(event, say):
+    print('b')
     eventUser = event['user']
     say(slackMessages.welcomeUser)
 
 
 @app.event('message')
 def Respond(event, say):
+    print('a')
     # Get event metadata
     eventUser = event['user']
     eventText = event['text']
