@@ -8,6 +8,8 @@ from mongoHelpers import Monkey, MAX_STATE
 import pymongo
 import logging
 from smartaBrain import SmartaBrain
+from flask import Flask, request
+from slack_bolt.adapter.flask import SlackRequestHandler
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -219,3 +221,11 @@ def Respond(event, say):
             say(slackMessages.questionResponse(
                 brain.think(relevantText, eventText)))
             return
+
+flask_app = Flask(__name__)
+handler = SlackRequestHandler(app)
+
+
+@flask_app.route("/slack/events", methods=["POST"])
+def slack_events():
+    return handler.handle(request)
