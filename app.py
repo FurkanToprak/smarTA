@@ -44,7 +44,7 @@ flask_app = Flask(__name__)
 handler = SlackRequestHandler(app)
 # app.start(port=appPort)
 if __name__ == '__main__':
-    flask_app.run(port=appPort, debug=True)
+    flask_app.run(host='0.0.0.0', port=appPort, debug=True)
 # Initialize mongo controller
 monkey = Monkey(mongoDatabase, mongoPassword)
 # Initialize pretrained BERT NLP model
@@ -120,14 +120,12 @@ def processCommand(eventText, eventTeam, eventUser, say, isAdmin, state, goodBot
 
 @app.event('app_home_opened')
 def Greet(event, say):
-    print('HOME_ENTRY')
     eventUser = event['user']
     say(slackMessages.welcomeUser)
 
 
 @app.event('message')
 def Respond(event, say):
-    print('MESSAGE_ENTRY')
     # Get event metadata
     eventUser = event['user']
     eventText = event['text']
@@ -224,6 +222,5 @@ def Respond(event, say):
 
 @flask_app.route("/slack/events", methods=["POST"])
 def slack_events():
-    print('FLASK ENTRY')
     return handler.handle(request)
 

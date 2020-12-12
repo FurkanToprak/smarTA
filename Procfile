@@ -1,1 +1,1 @@
-gunicorn --workers=1 -b localhost:8000 -t 120 app:flask_app
+gunicorn --workers=1 -b 0.0.0.0:{$PORT} app:flask_app
