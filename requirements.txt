@@ -9,3 +9,4 @@ python-Levenshtein
 tensorflow
 tensorflow_hub
 numpy
+nltk

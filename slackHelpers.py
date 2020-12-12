@@ -42,7 +42,7 @@ def processFiles(monkey, eventTeam, eventFiles, say, convertFile, userIsAdmin, s
                 fileContent = tooMuchSpaceRegex.sub(' ', rawFileContent)
                 remove(cachedFileName)
             else:
-                say(slackMessages.processBadTypeError)
+                say(slackMessages.processTypeError(fileName))
                 continue
             if convertFile:
                 say(slackMessages.convertPrefix(fileName) + fileContent)

@@ -31,13 +31,23 @@ goodBotResponse = ':)'
 badBotCommand = 'bad bot'
 badBotResponse = ':('
 
+botHelpTip = 'Reply with `' + botHelpCommand + '` for more information.'
+inputHelpTip = 'For instructions on uploading files, best practices, and technical limitations, reply with `' + inputHelpCommand + '`'
+questionHelpTip = f'To learn how to ask me questions, reply with `{questionHelpCommand}`'
+
+botStatusCommand = 'bot status'
+
+
+def botStatusResponse(
+    goodBot, badBot): return f'I have been a good bot {goodBot} times and a bad bot {badBot} times, making me {int((goodBot * 100) / (goodBot + badBot))} percent good.'
+
+
 commands = [statusWorkspaceCommand, clearWorkspaceCommand, statusCommand, userCommand, adminCommand,
-            botHelpCommand, inputHelpCommand, questionHelpCommand, listCommandsCommand, listTopicsCommand, backQuestionCommand, cancelQuestionCommand, goodBotCommand, badBotCommand]
+            botHelpCommand, inputHelpCommand, questionHelpCommand, listCommandsCommand, listTopicsCommand, backQuestionCommand, cancelQuestionCommand, goodBotCommand, badBotCommand, botStatusCommand]
 adminRequiredCommands = [statusWorkspaceCommand, clearWorkspaceCommand]
 
 adminTip = f'To become an admin, reply to me with `{adminCommand}`.'
 adminRequiredError = 'You need to be an admin to do that. ' + adminTip
-
 
 
 def listCommands():
@@ -45,6 +55,8 @@ def listCommands():
 
 
 def listTopics(files):
+    if len(files) == 0:
+        return f'You have not uploaded any files. {inputHelpTip}'
     topics = NEWLINE.join(map(lambda file: f'`{file["topic"]}`', files))
     return f'*Topics:*{NEWLINE}{topics}'
 
@@ -64,10 +76,6 @@ def statusResponse(isAdmin, userID, teamID):
 userResponse = 'You have become a user. ' + adminTip
 adminResponse = 'You have become an admin. To stop being an admin, repond with `' + userCommand + '`'
 
-botHelpTip = 'Reply with `' + botHelpCommand + '` for more information.'
-inputHelpTip = 'For instructions on uploading files, best practices, and technical limitations, reply with `' + inputHelpCommand + '`'
-questionHelpTip = f'To learn how to ask me questions, reply with `{questionHelpCommand}`'
-
 welcomeUser = 'Welcome! ' + botHelpTip
 
 processStart = 'Processing your file...'
@@ -80,7 +88,7 @@ unknownError = 'An unknown error occurred.'
 
 
 def processTypeError(fileName):
-    return f'Only `.pdf` and `.txt` files can be processed. Your incompatible file `{fileName}` were skipped.'
+    return f'Only `.pdf` and `.txt` files can be processed. Your incompatible file `{fileName}` was skipped.'
 
 
 processStop = 'Your files were processed!'
@@ -108,7 +116,7 @@ Here's how you ask me questions:\n
 *3.* To select topics, reply with the number assigned to each topic. For example, "4" is a valid response.{NEWLINE}
 *4.* Once a topic is selected, ask a specific question: For example, "{exampleQuestion}".{NEWLINE}
 *5.* To go to the previous step, reply with `{backQuestionCommand}`. To cancel your question, reply with `{cancelQuestionCommand}`.{NEWLINE}
-*6.* If you leave, we'll keep your results for you. You can keep asking your question when you come back. To stop asking your question, see the above item.
+*6.* If you leave, I'll keep your results for you. You can keep asking your question when you come back. To stop asking your question, see the above item.
 '''
 
 inputHelp = f'''
@@ -130,6 +138,7 @@ inputHelp = f'''
 stateNavigationTip = f'You can reply with `{backQuestionCommand}` to go to the previous step or `{cancelQuestionCommand}` to stop asking your question.'
 rephraseTip = 'try rephrasing your topic or asking about something else.'
 
+
 def relevantTopicsMessage(relevantTopics):
     message = f'Which of these topics sound the most relevant to your question?{NEWLINE}'
     for i in range(len(relevantTopics)):
@@ -138,9 +147,10 @@ def relevantTopicsMessage(relevantTopics):
     return message
 
 
-noRelevantTopicsMessage = f'I could not find a topic like that- {rephraseTip} {stateNavigationTip}. {botHelpTip}'
+noRelevantTopicsMessage = f'I could not find a topic like that- {rephraseTip} {stateNavigationTip} {botHelpTip}'
 
-invalidChosenTopicMessage = f"I don't know what that means. Please reply with one of the numbers listed above. {botHelp}" 
+invalidChosenTopicMessage = f"I don't know what that means. Please reply with one of the numbers listed above. {botHelp}"
+
 
 def choseTopicMessage(topic):
     return f'You have chosen the topic: `{topic}`. What is your specific question? ' + stateNavigationTip
@@ -155,6 +165,7 @@ def questionResponse(results):
         result += f'*{i + 1}. * {results[i]}{NEWLINE}'
     result += stateNavigationTip
     return result
+
 
 zeroStateRestriction = f'You cannot cancel your question because you have not asked me one. {questionHelpTip}'
 cancelQuestionResponse = f'You have canceled your question. {questionHelpTip}'

@@ -43,6 +43,7 @@ monkey = Monkey(mongoDatabase, mongoPassword)
 # Initialize pretrained BERT NLP model
 brain = SmartaBrain()
 
+
 def setAdmin(eventTeam, eventUser, status):
     monkey.updateUser(eventTeam, eventUser, isAdmin=status)
 
@@ -89,20 +90,22 @@ def processCommand(eventText, eventTeam, eventUser, say, isAdmin, state, goodBot
                 say(slackMessages.zeroStateRestriction)
                 return
             else:
-                monkey.updateUser(eventTeam, eventUser, state = 0)
+                monkey.updateUser(eventTeam, eventUser, state=0)
                 say(slackMessages.cancelQuestionResponse)
         elif eventText == slackMessages.backQuestionCommand:
             if state == 0:
                 say(slackMessages.zeroStateRestriction)
             else:
-                monkey.updateUser(eventTeam, eventUser, state = state - 1)
+                monkey.updateUser(eventTeam, eventUser, state=state - 1)
                 say(slackMessages.backQuestionResponse)
         elif eventText == slackMessages.goodBotCommand:
             say(slackMessages.goodBotResponse)
-            monkey.updateWorkspace(eventTeam, goodBot=goodBot)
+            monkey.updateWorkspace(eventTeam, goodBot=goodBot + 1)
         elif eventText == slackMessages.badBotCommand:
             say(slackMessages.badBotResponse)
-            monkey.updateWorkspace(eventTeam, badBot=badBot)
+            monkey.updateWorkspace(eventTeam, badBot=badBot + 1)
+        elif eventText == slackMessages.botStatusCommand:
+            say(slackMessages.botStatusResponse(goodBot, badBot))
     except Exception as s:
         print(s)
         say(slackMessages.unknownError)
@@ -147,14 +150,15 @@ def Respond(event, say):
     files = thisWorkspace['files']
     goodBot = thisWorkspace['goodBot']
     badBot = thisWorkspace['badBot']
-    isAdmin = thisUser['isAdmin'] # bool
-    state = thisUser['state'] # int
-    relevantTopics = thisUser['relevantTopics'] # string[]
-    chosenTopic = thisUser['chosenTopic'] # int
+    isAdmin = thisUser['isAdmin']  # bool
+    state = thisUser['state']  # int
+    relevantTopics = thisUser['relevantTopics']  # string[]
+    chosenTopic = thisUser['chosenTopic']  # int
     # Flags regarding user
     convertFile = eventText == slackMessages.convertFlag
     if slackMessages.isCommand(eventText):  # Process user message
-        processCommand(eventText, eventTeam, eventUser, say, isAdmin, state, goodBot, badBot)
+        processCommand(eventText, eventTeam, eventUser,
+                       say, isAdmin, state, goodBot, badBot)
         return
     elif eventFiles:  # Process files, if any and if possible
         processFiles(monkey, eventTeam, eventFiles, say, convertFile,
@@ -187,7 +191,8 @@ def Respond(event, say):
             if 0 <= chosenTopic and chosenTopic < len(relevantTopics):
                 monkey.updateUser(eventTeam, eventUser,
                                   state=(1 + state) % MAX_STATE, chosenTopic=chosenTopic)
-                say(slackMessages.choseTopicMessage(relevantTopics[chosenTopic]))
+                say(slackMessages.choseTopicMessage(
+                    relevantTopics[chosenTopic]))
                 return
             else:
                 say(slackMessages.invalidChosenTopicMessage)
@@ -205,9 +210,9 @@ def Respond(event, say):
                 say(slackMessages.unknownError)
                 return
             # relevantText
-            say(slackMessages.questionResponse(brain.think(relevantText, eventText)))
+            say(slackMessages.questionResponse(
+                brain.think(relevantText, eventText)))
             return
-
 
 
 if __name__ == "__main__":

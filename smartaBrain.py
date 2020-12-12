@@ -1,13 +1,20 @@
 import tensorflow
 import tensorflow_hub as hub
 import numpy as np
+import re
+import nltk
+
+nltk.download()
+
+tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
 class SmartaBrain():
     def __init__(self):
         self.embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
 
     def think(self, answer_text, question):
-        sentences = answer_text.split('.')
+        sentences = tokenizer.tokenize(answer_text)
+
         sentences.insert(0, question)
         embedding = self.embed(sentences)
         scores = np.inner(embedding, embedding)[0]
@@ -20,8 +27,11 @@ class SmartaBrain():
         windows = []
         for result in results:
             index = result[1]
-            minIndex = max(0, index - 1)
-            maxIndex = min(len(sentences), index + 2)
-            window = '.'.join(sentences[minIndex: maxIndex])
+            window = ''
+            if index > 0:
+                window += sentences[index - 1]
+            window += f' *{sentences[index]}*'
+            if index + 1 < len(sentences):
+                window += f' {sentences[index + 1]}'            
             windows.append(window)
         return windows
