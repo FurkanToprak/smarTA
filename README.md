@@ -1,3 +1,35 @@
+# Architecture
+
+This chatbot is powered with the `Bolt` framework for python. This app listens to event hooks from Slack and responds using its knowledge base (stored in MongoDB) and its NLP Components.
+
+## NLP Components
+This slackbot indexes the inputted files by topic. The user provides a topic and the user input is fuzzy-matched against the inputted topics. After a section of the textbook is selected, a vector space model is used to calculate the semantic similarity of queries and paragraphs of the textbook. The vector space model uses embeddings that were trained and tested on the [Stanford Question Answering Dataset](https://rajpurkar.github.io/SQuAD-explorer/) 
+
+## Database Schemas 
+
+The below architecture is used for the MongoDB database.
+
+* `[DB] smartav1`
+  * [Collection] Users
+    * Document Schema:
+    ```
+    _id: ObjectId()
+    questions: string[],
+    isAdmin: boolean,
+    teamID: string,
+    state: number,
+    relevantTopics: string[],
+    chosenTopic: number,
+    ```
+  * [Collection] Workspaces
+      * Document Schema:
+    ```
+    _id: ObjectId(),
+    files: { topic: string, content: string }[],
+    teamID: string,
+    goodBot: number,
+    badBot: number,
+    ```
 # About
 This app occupies whichever port specified in the .env file.
 
@@ -18,7 +50,18 @@ MONGO_DB=#STRING
 ```
 5. Run the app `python app.py`
 ## NLTK
-A package manager will pop up. Just install the package `punkt`, which is used for sentence-splitting. You can just exit out of the window if it is already installed.
+A package manager will pop up. After clicking the `All Packages` tab, install the package with the Identifier `punkt`. This package is used for sentence-splitting. You can just exit out of the window if it is already installed.
+
+## Hosting
+
+### Hosting Locally (ngrok)
+You can use `ngrok` to host locally `./ngrok http <PORT>`
+
+### Deploying to Heroku
+This repository automatically deploys on Heroku.
+
+### Configuring Event Listener
+If you're hosting this chatbot yourself, make sure your chatbot listens to events at `https://<YOUR_URL>/slack/events`
 
 # Add to your Slack Workspace
 To install `smarta`, just click the button below! This button can be embedded in HTML with the code following the button.
