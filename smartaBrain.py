@@ -4,7 +4,7 @@ import numpy as np
 import re
 import nltk
 
-nltk.download()
+nltk.download('punkt')
 
 tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
