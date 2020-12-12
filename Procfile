@@ -1,1 +1,1 @@
-gunicorn --workers=1 -b 0.0.0.0:{$PORT} app:flask_app
+gunicorn --workers=1 -b 0.0.0.0:{$PORT} --preload app:flask_app
