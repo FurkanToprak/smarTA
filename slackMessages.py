@@ -136,7 +136,7 @@ inputHelp = f'''
 '''
 
 stateNavigationTip = f'You can reply with `{backQuestionCommand}` to go to the previous step or `{cancelQuestionCommand}` to stop asking your question.'
-rephraseTip = 'try rephrasing your topic or asking about something else.'
+rephraseTip = f'try rephrasing your topic or asking about something else after replying with {backQuestionCommand}.'
 
 
 def relevantTopicsMessage(relevantTopics):
