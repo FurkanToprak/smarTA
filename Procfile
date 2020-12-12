@@ -1,1 +1,1 @@
-web: gunicorn --workers 1 --threads 1 --timeout 0 app:flask_app
+web: gunicorn -b 127.0.0.1:8000 app:flask_app
