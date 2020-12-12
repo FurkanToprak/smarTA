@@ -12,3 +12,4 @@ numpy==1.18.4
 nltk
 dnspython
 flask
+gunicorn
