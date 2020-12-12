@@ -48,8 +48,6 @@ MONGO_PASS=#STRING
 MONGO_DB=#STRING
 ```
 5. Run the app `python app.py`
-## NLTK
-A package manager will pop up. After clicking the `All Packages` tab, install the package with the Identifier `punkt`. This package is used for sentence-splitting. You can just exit out of the window if it is already installed.
 
 ## Hosting
 
