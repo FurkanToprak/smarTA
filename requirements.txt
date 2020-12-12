@@ -8,5 +8,5 @@ fuzzywuzzy
 python-Levenshtein
 tensorflow
 tensorflow_hub
-numpy
+numpy==1.19.4
 nltk
