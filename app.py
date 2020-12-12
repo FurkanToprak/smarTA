@@ -43,7 +43,8 @@ app = App(
 flask_app = Flask(__name__)
 handler = SlackRequestHandler(app)
 # app.start(port=appPort)
-flask_app.run(host='0.0.0.0', port=appPort, debug=True)
+if __name__ == '__main__':
+    flask_app.run(port=appPort, debug=True)
 # Initialize mongo controller
 monkey = Monkey(mongoDatabase, mongoPassword)
 # Initialize pretrained BERT NLP model

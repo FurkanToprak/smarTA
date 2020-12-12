@@ -1,1 +1,1 @@
-web: python app.py
+gunicorn --workers=1 -b localhost:8000 -t 120 app:flask_app
