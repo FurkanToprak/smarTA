@@ -1,7 +1,7 @@
 import pymongo
 import devMessages
 
-MAX_STATE = 4
+MAX_STATE = 3
 
 class Monkey:
     def __init__(self, mongoDatabase, mongoPassword):

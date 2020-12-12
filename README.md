@@ -1,6 +1,9 @@
+# About
+`smarta` is your Artificially Intelligent Teaching Assistant
+
 # Architecture
 
-This chatbot is powered with the `Bolt` framework for python. This app listens to event hooks from Slack and responds using its knowledge base (stored in MongoDB) and its NLP Components.
+This chatbot is powered with the `Bolt` framework for python. This app listens to event hooks from Slack and responds using its knowledge base (stored in MongoDB) and its NLP Components. This app occupies whichever port specified in the .env file.
 
 ## NLP Components
 This slackbot indexes the inputted files by topic. The user provides a topic and the user input is fuzzy-matched against the inputted topics. After a section of the textbook is selected, a vector space model is used to calculate the semantic similarity of queries and paragraphs of the textbook. The vector space model uses embeddings that were trained and tested on the [Stanford Question Answering Dataset](https://rajpurkar.github.io/SQuAD-explorer/) 
@@ -10,8 +13,7 @@ This slackbot indexes the inputted files by topic. The user provides a topic and
 The below architecture is used for the MongoDB database.
 
 * `[DB] smartav1`
-  * [Collection] Users
-    * Document Schema:
+  * `[Collection] Users`
     ```
     _id: ObjectId()
     questions: string[],
@@ -21,8 +23,7 @@ The below architecture is used for the MongoDB database.
     relevantTopics: string[],
     chosenTopic: number,
     ```
-  * [Collection] Workspaces
-      * Document Schema:
+  * `[Collection] Workspaces`
     ```
     _id: ObjectId(),
     files: { topic: string, content: string }[],
@@ -30,8 +31,6 @@ The below architecture is used for the MongoDB database.
     goodBot: number,
     badBot: number,
     ```
-# About
-This app occupies whichever port specified in the .env file.
 
 # Installation and Usage
 You too can clone and host this chatbot. As a prerequisite, you need to have a Slack app and a MongoDB Atlas instance.
@@ -59,6 +58,8 @@ You can use `ngrok` to host locally `./ngrok http <PORT>`
 
 ### Deploying to Heroku
 This repository automatically deploys on Heroku.
+
+If you're deploying this app to Heroku, you cannot use a `.env` in production. Instead, see how you can configure Heroku environment variables [in the Heroku Dashboard](https://devcenter.heroku.com/articles/config-vars#using-the-heroku-dashboard)
 
 ### Configuring Event Listener
 If you're hosting this chatbot yourself, make sure your chatbot listens to events at `https://<YOUR_URL>/slack/events`

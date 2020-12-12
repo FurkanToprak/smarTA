@@ -209,7 +209,6 @@ def Respond(event, say):
             if relevantText is None:
                 say(slackMessages.unknownError)
                 return
-            # relevantText
             say(slackMessages.questionResponse(
                 brain.think(relevantText, eventText)))
             return
