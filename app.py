@@ -6,13 +6,10 @@ import slackMessages
 from slackHelpers import fetchTeamFromURL, processFiles, findRelevantTopics
 from mongoHelpers import Monkey, MAX_STATE
 import pymongo
-import logging
+import requests
 from smartaBrain import SmartaBrain
-from flask import Flask, request
 from slack_bolt.adapter.flask import SlackRequestHandler
-
-logging.basicConfig(level=logging.DEBUG)
-
+from flask import Flask, request
 # Load environment variables.
 load_dotenv()
 slackSigningSecret = os.getenv('SLACK_SIGNING_SECRET')
@@ -42,8 +39,9 @@ app = App(
     signing_secret=slackSigningSecret,
     token=slackOAuthToken
 )
-if __name__ == "__main__":
-    app.start(port=appPort)
+
+flask_app = Flask(__name__)
+handler = SlackRequestHandler(app)
 
 # Initialize mongo controller
 monkey = Monkey(mongoDatabase, mongoPassword)
@@ -120,14 +118,12 @@ def processCommand(eventText, eventTeam, eventUser, say, isAdmin, state, goodBot
 
 @app.event('app_home_opened')
 def Greet(event, say):
-    print('b')
     eventUser = event['user']
     say(slackMessages.welcomeUser)
 
 
 @app.event('message')
 def Respond(event, say):
-    print('a')
     # Get event metadata
     eventUser = event['user']
     eventText = event['text']
@@ -222,11 +218,10 @@ def Respond(event, say):
                 brain.think(relevantText, eventText)))
             return
 
-flask_app = Flask(__name__)
-handler = SlackRequestHandler(app)
-
-
 @flask_app.route("/slack/events", methods=["POST"])
 def slack_events():
-    print('c')
+    print('a')
     return handler.handle(request)
+
+# app.start(port=appPort)
+flask_app.run(host='smartaserver.herokuapp.com', port=appPort)
