@@ -49,7 +49,7 @@ if __name__ == '__main__':
 # Initialize mongo controller
 monkey = Monkey(mongoDatabase, mongoPassword)
 # Initialize pretrained BERT NLP model
-# brain = SmartaBrain()
+brain = None
 
 
 def setAdmin(eventTeam, eventUser, status):
@@ -225,3 +225,4 @@ def Respond(event, say):
 def slack_events():
     return handler.handle(request)
 
+brain = SmartaBrain()

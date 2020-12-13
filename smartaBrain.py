@@ -24,7 +24,6 @@ class SmartaBrain():
             if thisScore > 0:
                results.append((thisScore, i))
         results = sorted(results, key=lambda x: x[0], reverse=True)[0:5]
-        print(results)
         windows = []
         for result in results:
             index = result[1]

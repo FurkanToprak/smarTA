@@ -60,6 +60,9 @@ Use `gunicorn --workers=1 -b localhost:8000 app:flask_app`
 ### Deploying to Heroku
 This repo automatically deploys. Just connect my repo `https://github.com/FurkanToprak/smarTA`.
 
+### Server
+This bot's backend is hosted at `https://smartaserver.herokuapp.com`.
+
 ### Configuring Event Listener
 If you're hosting this chatbot yourself, make sure your chatbot listens to events at `https://<YOUR_URL>/slack/events`
 
