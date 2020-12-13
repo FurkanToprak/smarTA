@@ -42,7 +42,6 @@ app = App(
 
 flask_app = Flask(__name__)
 flask_app.debug = True
-flask_app.
 handler = SlackRequestHandler(app)
 # app.start(port=appPort)
 if __name__ == '__main__':
