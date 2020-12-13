@@ -42,6 +42,7 @@ app = App(
 
 flask_app = Flask(__name__)
 flask_app.debug = True
+flask_app.
 handler = SlackRequestHandler(app)
 # app.start(port=appPort)
 if __name__ == '__main__':
@@ -49,7 +50,7 @@ if __name__ == '__main__':
 # Initialize mongo controller
 monkey = Monkey(mongoDatabase, mongoPassword)
 # Initialize pretrained BERT NLP model
-brain = SmartaBrain()
+# brain = SmartaBrain()
 
 
 def setAdmin(eventTeam, eventUser, status):
