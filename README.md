@@ -55,7 +55,7 @@ MONGO_DB=#STRING
 You can use `ngrok` to host locally `./ngrok http <PORT>`
 
 ### Deploying to Production
-Use `gunicorn --workers=1 -b localhost:8000 app:flask_app`
+Use `gunicorn -b 0.0.0.0:<PORT> app:flask_app`
 
 ### Deploying to Heroku
 This repo automatically deploys. Just connect my repo `https://github.com/FurkanToprak/smarTA`.
