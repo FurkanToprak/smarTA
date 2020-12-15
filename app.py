@@ -10,6 +10,10 @@ import requests
 from smartaBrain import SmartaBrain
 from slack_bolt.adapter.flask import SlackRequestHandler
 from flask import Flask, request
+from uuid import uuid4
+from slack_sdk.oauth.installation_store import FileInstallationStore
+from slack_sdk.oauth.state_store import FileOAuthStateStore
+from slack_bolt.oauth.oauth_settings import OAuthSettings
 # Load environment variables.
 load_dotenv()
 slackSigningSecret = os.getenv('SLACK_SIGNING_SECRET')
@@ -33,13 +37,34 @@ if mongoPassword is None:
 mongoDatabase = os.getenv('MONGO_DB')
 if mongoDatabase is None:
     raise envMongoDbException
+authDir = os.getenv('AUTH_DIR')
+if authDir is None:
+    raise envAuthPathException
+slackClientID = os.getenv('SLACK_CLIENT_ID')
+if slackClientID is None:
+    raise envClientIDException
+slackClientSecret = os.getenv('SLACK_CLIENT_SECRET')
+if slackClientSecret is None:
+    raise envClientSecretException
 
+brain = SmartaBrain()
+
+# Initialize OAuth2 v2 settings
+oauth_settings = OAuthSettings(
+    client_id=slackClientID,
+    client_secret=slackClientSecret,
+    scopes=['chat:write', 'files:read', 'im:history', 'im:read',
+            'im:write', 'users.profile:read', 'users:read'],
+    installation_store=FileInstallationStore(base_dir=authDir),
+    state_store=FileOAuthStateStore(expiration_seconds=600, base_dir=authDir)
+)
 # Initialize app.
 app = App(
     signing_secret=slackSigningSecret,
-    token=slackOAuthToken
-)
+    token=slackOAuthToken,
+    oauth_settings=oauth_settings
 
+)
 flask_app = Flask(__name__)
 flask_app.debug = True
 handler = SlackRequestHandler(app)
@@ -221,8 +246,19 @@ def Respond(event, say):
                 brain.think(relevantText, eventText)))
             return
 
+
 @flask_app.route("/slack/events", methods=["POST"])
 def slack_events():
     return handler.handle(request)
 
-brain = SmartaBrain()
+
+@flask_app.route("/slack/install", methods=["GET"])
+def install():
+    print('b')
+    return handler.handle(request)
+
+
+@flask_app.route("/slack/oauth_redirect", methods=["GET"])
+def oauth_redirect():
+    print('a')
+    return handler.handle(request)
