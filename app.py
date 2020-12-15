@@ -47,8 +47,6 @@ slackClientSecret = os.getenv('SLACK_CLIENT_SECRET')
 if slackClientSecret is None:
     raise envClientSecretException
 
-brain = SmartaBrain()
-
 # Initialize OAuth2 v2 settings
 oauth_settings = OAuthSettings(
     client_id=slackClientID,
@@ -74,7 +72,7 @@ monkey = Monkey(mongoDatabase, mongoPassword)
 if __name__ == '__main__':
     flask_app.run(host='0.0.0.0', port=appPort, debug=True)
 # Initialize pretrained BERT NLP model
-brain = None
+brain = SmartaBrain()
 
 
 def setAdmin(eventTeam, eventUser, status):
@@ -140,7 +138,6 @@ def processCommand(eventText, eventTeam, eventUser, say, isAdmin, state, goodBot
         elif eventText == slackMessages.botStatusCommand:
             say(slackMessages.botStatusResponse(goodBot, badBot))
     except Exception as s:
-        print(s)
         say(slackMessages.unknownError)
 
 
@@ -254,11 +251,9 @@ def slack_events():
 
 @flask_app.route("/slack/install", methods=["GET"])
 def install():
-    print('b')
     return handler.handle(request)
 
 
 @flask_app.route("/slack/oauth_redirect", methods=["GET"])
 def oauth_redirect():
-    print('a')
     return handler.handle(request)
