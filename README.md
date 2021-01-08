@@ -36,6 +36,10 @@ You can use `ngrok` to host locally `./ngrok http <PORT>`
 
 Use `gunicorn -b 0.0.0.0:<PORT> app:flask_app`
 
+### Preloading
+Startup may take too long, causing workers to time out and quit. In that case, either manually increase timeout time or preload:
+`gunicorn -b 0.0.0.0:8000 --preload app:flask_app`
+
 ### Deploying to Heroku/DIgitalOcean/AWS Elastic Bean Stalk
 
 This repo automatically deploys for most major hosting services. Just connect my repo `https://github.com/FurkanToprak/smarTA`.
