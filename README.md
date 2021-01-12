@@ -40,6 +40,8 @@ Use `gunicorn -b 0.0.0.0:<PORT> app:flask_app`
 Startup may take too long, causing workers to time out and quit. In that case, either manually increase timeout time or preload:
 `gunicorn -b 0.0.0.0:8000 --preload app:flask_app`
 
+See more [here](https://docs.gunicorn.org/en/0.17.4/configure.html#preload-app).
+
 ### Deploying to Heroku/DIgitalOcean/AWS Elastic Bean Stalk
 
 This repo automatically deploys for most major hosting services. Just connect my repo `https://github.com/FurkanToprak/smarTA`.
