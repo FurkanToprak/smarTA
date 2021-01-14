@@ -59,7 +59,6 @@ oauth_settings = OAuthSettings(
 # Initialize app.
 app = App(
     signing_secret=slackSigningSecret,
-    token=slackOAuthToken,
     oauth_settings=oauth_settings
 
 )
