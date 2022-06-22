@@ -7,7 +7,7 @@ pymongo[srv]
 fuzzywuzzy
 tensorflow
 tensorflow_hub
-numpy==1.19.2
+numpy==1.22.0
 nltk
 dnspython
 flask
